@@ -1,5 +1,3 @@
-## [https://gitlab.com/nikamooz_bigdata/webinars](https://gitlab.com/nikamooz_bigdata/webinars)
-
 #### Prerequisites
 
 - docker (`Docker Desktop` for windows)
@@ -8,7 +6,7 @@
 
 
 
-##### Webinar References 
+##### References 
 
 - [Tutorial :: Debezium Documentation - MySQL Version](https://debezium.io/documentation/reference/tutorial.html)
 -  [Change Data Capture Using Debezium Kafka and Pg · Start Data Engineering](https://www.startdataengineering.com/post/change-data-capture-using-debezium-kafka-and-pg/)
@@ -39,7 +37,7 @@ $ cat /var/lib/postgresql/data/postgresql.conf
 - Use `DBeaver `
 
   ```sql
-use database start_data_engineer;
+  use database start_data_engineer;
   CREATE SCHEMA bank;
   SET search_path TO bank,public;
   CREATE TABLE bank.holding (
@@ -272,7 +270,7 @@ docker run -it --rm --name consumer --link zookeeper:zookeeper --link kafka:kafk
   $ docker run -it --rm --name consumer --link zookeeper:zookeeper \
   --link kafka:kafka debezium/kafka:1.1 watch-topic \
   -a bankserver1.bank.holding | grep --line-buffered '^{' \
-  | ./stream.py > ./holding_pivot.txt
+  | ./parse.py > ./holding_pivot.txt
   ```
   
   

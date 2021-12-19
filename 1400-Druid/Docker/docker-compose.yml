@@ -1,0 +1,86 @@
+version: '3.6'
+
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-log:
+    driver: local
+  kafka-data:
+    driver: local
+
+services:
+  akhq:
+    # build:
+    #   context: .
+    image: tchiotludo/akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+    ports:
+      - 8000:8080
+    links:
+      - kafka
+      - schema-registry
+    networks:
+      - services
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.0
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data:Z
+      - zookeeper-log:/var/lib/zookeeper/log:Z
+    environment:
+      ZOOKEEPER_CLIENT_PORT: '2081'
+      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
+    networks:
+      - services
+
+  kafka:
+    image: confluentinc/cp-kafka:6.2.0
+    volumes:
+      - kafka-data:/var/lib/kafka/data:Z
+    environment:
+      KAFKA_BROKER_ID: '0'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2081'
+      KAFKA_NUM_PARTITIONS: '2'
+      KAFKA_COMPRESSION_TYPE: 'gzip'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+      KAFKA_JMX_PORT: '9091'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.auth.SimpleAclAuthorizer'
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
+    links:
+      - zookeeper
+    ports:
+      - 9092:9092
+    networks:
+      - services
+
+  # postgres:
+  #   container_name: ${CONTAINER_NAME:-postgres}
+  #   hostname: ${CONTAINER_NAME:-postgres}
+  #   image: postgres:${PG_VERSION:-14-alpine}
+  #   volumes:
+  #     - ./${DATA_FOLDER:-db}:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_PASSWORD=${DB_PASS:-druid123}
+  #     - POSTGRES_USER=${DB_USER:-druid}
+  #     - POSTGRES_DB=${DB_NAME:-lookups}
+  #   networks:
+  #     - services
+  #   ports:
+  #     - ${PORT:-5432}:5432
+    # restart: always
+
+networks: 
+  services:
+    name: ${APP_NAME:-druid}_network
+    

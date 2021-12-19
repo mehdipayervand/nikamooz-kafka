@@ -1,0 +1,5 @@
+.venv/
+Images/
+db/
+*.gzip
+Downloads/
